@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document Chatbot (RAG)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Ask your question</h1>
+    <div class="chat-box" id="chat-box"></div>
+    <input type="text" id="user-message" placeholder="Ask your question...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const userMsg = document.getElementById('user-message').value;
+      if (!userMsg) return;
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML += `<div class="user">You: ${userMsg}</div>`;
+      fetch('/get_response', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'user_message=' + encodeURIComponent(userMsg)
+      })
+      .then(response => response.json())
+      .then(data => {
+        chatBox.innerHTML += `<div class="bot">Bot: ${data.response}</div>`;
+        document.getElementById('user-message').value = '';
+      });
+    }
+  </script>
+</body>
+</html>

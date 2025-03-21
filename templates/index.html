@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        #chat-window { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; background: #f9f9f9; border-radius: 5px;}
+        .user { color: blue; margin-bottom: 10px; }
+        .bot { color: green; margin-bottom: 10px; }
+        input, button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>📄 Document Chatbot</h1>
+
+    <div id="chat-window"></div>
+
+    <form id="chat-form">
+        <input type="text" id="user-message" placeholder="Ask your question..." required style="width: 70%;">
+        <button type="submit">Send</button>
+    </form>
+
+    <hr>
+
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="document" id="document" accept=".pdf" required>
+        <button type="submit">Upload PDF</button>
+    </form>
+
+    <div id="upload-status"></div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-message');
+        const uploadForm = document.getElementById('upload-form');
+        const uploadStatus = document.getElementById('upload-status');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+            const response = await fetch('/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+            uploadStatus.innerText = result.message;
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return;
+            addMessage(`You: ${userMessage}`, 'user');
+            userInput.value = '';
+
+            const formData = new FormData();
+            formData.append('user_message', userMessage);
+            const response = await fetch('/get_response', { method: 'POST', body: formData });
+            const data = await response.json();
+            addMessage(`Bot: ${data.response}`, 'bot');
+        });
+
+        function addMessage(message, sender) {
+            const div = document.createElement('div');
+            div.className = sender;
+            div.textContent = message;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    </script>
+</body>
+</html>
